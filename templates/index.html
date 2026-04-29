@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ori — par l'Étudiant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; }
+    body { font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+
+    :root {
+      --bg:         #F1EDE8;
+      --white:      #FFFFFF;
+      --dark:       #181818;
+      --gray:       #9B9B9B;
+      --border:     rgba(0,0,0,0.08);
+      --hover:      rgba(0,0,0,0.04);
+      --sidebar:    rgba(0,0,0,0.025);
+      --card:       rgba(255,255,255,0.75);
+      --header:     rgba(248,244,240,0.92);
+      --input-bg:   #FFFFFF;
+      --msg-bg:     #212121;
+      --msg-color:  #FFFFFF;
+      --blue:       #1A9EE2;
+      --red:        #E8192C;
+    }
+    html.dark {
+      --bg:         #111111;
+      --white:      #1C1C1E;
+      --dark:       #F0EDE8;
+      --gray:       #888;
+      --border:     rgba(255,255,255,0.09);
+      --hover:      rgba(255,255,255,0.06);
+      --sidebar:    rgba(255,255,255,0.03);
+      --card:       rgba(30,30,32,0.92);
+      --header:     rgba(18,18,20,0.94);
+      --input-bg:   #1C1C1E;
+      --msg-bg:     #2C2C2E;
+      --msg-color:  #F0EDE8;
+    }
+    body { background: var(--bg); color: var(--dark); }
+    html.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .fu  { animation: fadeUp .28s cubic-bezier(.22,.68,0,1.2) both; }
+    .fu2 { animation: fadeUp .28s .06s cubic-bezier(.22,.68,0,1.2) both; }
+    .fu3 { animation: fadeUp .28s .12s cubic-bezier(.22,.68,0,1.2) both; }
+    .fu4 { animation: fadeUp .28s .18s cubic-bezier(.22,.68,0,1.2) both; }
+    .me  { animation: fadeUp .24s cubic-bezier(.22,.68,0,1.2) both; }
+
+    @keyframes spin       { to { transform: rotate(360deg); } }
+    @keyframes glow1 { 0%,100%{opacity:.16;transform:scale(1)} 50%{opacity:.36;transform:scale(1.3)} }
+    @keyframes glow2 { 0%,100%{opacity:.08;transform:scale(1)} 50%{opacity:.20;transform:scale(1.6)} }
+    @keyframes breathe { 0%,100%{opacity:.5} 50%{opacity:1} }
+    @keyframes bar-grow { from { width: 0% } }
+    @keyframes aurora {
+      0%,100% { background-position:0% 50% }
+      50%     { background-position:100% 50% }
+    }
+    @keyframes mic-pulse {
+      0%,100%{box-shadow:0 0 0 0 rgba(26,158,226,.4)}
+      50%{box-shadow:0 0 0 6px rgba(26,158,226,0)}
+    }
+    .ori-spin { animation: spin 10s linear infinite; display:inline-block; }
+    .ori-breathe { animation: breathe 2.8s ease-in-out infinite; }
+    .mic-live { animation: mic-pulse 1.2s ease-in-out infinite; }
+
+    .aurora-wrap {
+      background: linear-gradient(120deg,#1A9EE2,#E8192C,#1A9EE2);
+      background-size: 300% 300%;
+      animation: aurora 5s ease infinite;
+      border-radius: 38px;
+      padding: 1.5px;
+    }
+
+    /* Tweaks panel */
+    .twk{position:fixed;right:16px;bottom:16px;z-index:9999;width:260px;
+      max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+      background:rgba(250,249,247,.85);color:#29261b;
+      backdrop-filter:blur(24px);border:.5px solid rgba(255,255,255,.6);
+      border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);
+      font:11.5px/1.4 ui-sans-serif,sans-serif;overflow:hidden}
+    .twk-hd{display:flex;align-items:center;justify-content:space-between;
+      padding:10px 8px 10px 14px;cursor:move;user-select:none;border-bottom:.5px solid rgba(0,0,0,.07)}
+    .twk-hd b{font-size:12px;font-weight:600}
+    .twk-x{border:0;background:transparent;color:rgba(41,38,27,.5);width:22px;height:22px;border-radius:6px;cursor:pointer;font-size:14px;line-height:22px}
+    .twk-body{padding:8px 12px 14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+    .twk-sect{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(41,38,27,.4);padding-top:8px}
+    .twk-seg{display:flex;padding:2px;border-radius:8px;background:rgba(0,0,0,.06);position:relative}
+    .twk-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);transition:left .15s,width .15s}
+    .twk-seg button{position:relative;z-index:1;flex:1;border:0;background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;border-radius:6px;cursor:pointer;padding:3px 6px;font-size:11px}
+    .twk-act{height:26px;padding:0 12px;border:0;border-radius:7px;background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:pointer;width:100%;text-align:left}
+    .twk-act:hover{background:#000}
+    .twk-lbl{font-size:11px;font-weight:500;color:rgba(41,38,27,.65);margin-bottom:3px}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+{% raw %}
+/* ── Tweaks panel (minimal) ─────────────────────────── */
+function useTweaks(defaults) {
+  const [v, setV] = React.useState(defaults);
+  const set = React.useCallback((k, val) => {
+    const edits = typeof k === 'object' ? k : { [k]: val };
+    setV(p => ({ ...p, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+  }, []);
+  return [v, set];
+}
+
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef(null);
+  const pos = React.useRef({ x: 16, y: 16 });
+
+  React.useEffect(() => {
+    const h = e => {
+      if (e?.data?.type === '__activate_edit_mode') setOpen(true);
+      else if (e?.data?.type === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', h);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', h);
+  }, []);
+
+  const drag = e => {
+    const el = ref.current; if (!el) return;
+    const r = el.getBoundingClientRect();
+    const [ox, oy, sx, sy] = [window.innerWidth - r.right, window.innerHeight - r.bottom, e.clientX, e.clientY];
+    const mv = ev => {
+      pos.current = { x: ox - (ev.clientX - sx), y: oy - (ev.clientY - sy) };
+      el.style.right = Math.max(8, pos.current.x) + 'px';
+      el.style.bottom = Math.max(8, pos.current.y) + 'px';
+    };
+    const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <div ref={ref} className="twk" style={{ right: 16, bottom: 16 }}>
+      <div className="twk-hd" onMouseDown={drag}>
+        <b>{title}</b>
+        <button className="twk-x" onClick={() => { setOpen(false); window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); }}>✕</button>
+      </div>
+      <div className="twk-body">{children}</div>
+    </div>
+  );
+}
+
+function TweakSection({ label }) { return <div className="twk-sect">{label}</div>; }
+
+function TweakRadio({ label, value, options, onChange }) {
+  const ref = React.useRef(null);
+  const opts = options.map(o => typeof o === 'object' ? o : { value: o, label: o });
+  const idx = Math.max(0, opts.findIndex(o => o.value === value));
+  const n = opts.length;
+  const vref = React.useRef(value); vref.current = value;
+  const at = cx => {
+    const r = ref.current.getBoundingClientRect();
+    return opts[Math.max(0, Math.min(n - 1, Math.floor(((cx - r.left - 2) / (r.width - 4)) * n)))].value;
+  };
+  const pd = e => {
+    const v = at(e.clientX); if (v !== vref.current) onChange(v);
+    const mv = ev => { if (ref.current) { const v2 = at(ev.clientX); if (v2 !== vref.current) onChange(v2); } };
+    const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+  };
+  return (
+    <div>
+      <div className="twk-lbl">{label}</div>
+      <div ref={ref} className="twk-seg" onPointerDown={pd}>
+        <div className="twk-thumb" style={{ left: `calc(2px + ${idx}*(100% - 4px)/${n})`, width: `calc((100% - 4px)/${n})` }}/>
+        {opts.map(o => <button key={o.value} type="button">{o.label}</button>)}
+      </div>
+    </div>
+  );
+}
+
+function TweakButton({ label, onClick }) {
+  return <button className="twk-act" type="button" onClick={onClick}>{label}</button>;
+}
+
+Object.assign(window, { useTweaks, TweaksPanel, TweakSection, TweakRadio, TweakButton });
+</script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+/* ── Persist helpers ─────────────────────────────────── */
+const store = {
+  get: (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  clear: () => { ['ori_profile','ori_convs','ori_folders'].forEach(k => localStorage.removeItem(k)); },
+};
+
+/* ── Time helpers ────────────────────────────────────── */
+function timeLabel(ts) {
+  const now = Date.now(), diff = now - ts;
+  if (diff < 60000) return 'À l\'instant';
+  if (diff < 3600000) return `Il y a ${Math.floor(diff/60000)} min`;
+  if (diff < 86400000) return 'Aujourd\'hui';
+  if (diff < 172800000) return 'Hier';
+  if (diff < 604800000) return `Il y a ${Math.floor(diff/86400000)} jours`;
+  return new Date(ts).toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+}
+function groupKey(ts) {
+  const now = Date.now(), diff = now - ts;
+  if (diff < 86400000) return 'Aujourd\'hui';
+  if (diff < 172800000) return 'Hier';
+  if (diff < 604800000) return 'Cette semaine';
+  return 'Plus ancien';
+}
+
+/* ── ID gen ──────────────────────────────────────────── */
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+/* ── Sparkle ─────────────────────────────────────────── */
+function Sparkle({ size = 9, color = 'var(--blue)' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M5 0L6.3 3.7L10 5L6.3 6.3L5 10L3.7 6.3L0 5L3.7 3.7Z" fill={color}/>
+    </svg>
+  );
+}
+
+/* ── OriAvatar ───────────────────────────────────────── */
+function OriAvatar({ size = 36 }) {
+  return <img src="/uploads/ori%20logo%20short.png" alt="Ori" width={size} height={size} style={{ flexShrink:0, display:'block', objectFit:'contain' }}/>;
+}
+
+/* ── User avatar (initials) ──────────────────────────── */
+function UserAvatar({ name, size = 28 }) {
+  const initials = name
+    ? name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()
+    : '?';
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: 'var(--dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <span style={{ color: 'var(--msg-color)', fontSize: size * 0.34, fontWeight: 700 }}>{initials}</span>
+    </div>
+  );
+}
+
+/* ── RichText (newlines + **bold**) ──────────────────── */
+function RichText({ text }) {
+  if (!text) return null;
+  return (
+    <span>
+      {text.split('\n').map((line, i, arr) => (
+        <span key={i}>
+          {line.split(/(\*\*[^*]+\*\*)/g).map((p, j) =>
+            p.startsWith('**') && p.endsWith('**')
+              ? <strong key={j}>{p.slice(2, -2)}</strong>
+              : <span key={j}>{p}</span>
+          )}
+          {i < arr.length - 1 && <br/>}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/* ── Folder icon ─────────────────────────────────────── */
+function FolderIcon({ color, size = 14 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 13" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M1 2.5C1 1.67 1.67 1 2.5 1H5.5L7 3H13.5C14.33 3 15 3.67 15 4.5V11C15 11.83 14.33 12.5 13.5 12.5H2.5C1.67 12.5 1 11.83 1 11V2.5Z" fill={color} fillOpacity=".15" stroke={color} strokeWidth="1.2" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+/* ── ChatInput ───────────────────────────────────────── */
+function ChatInput({ onSend, placeholder = 'Posez votre question à Ori…', disabled = false }) {
+  const [val, setVal] = useState('');
+  const [live, setLive] = useState(false);
+  const active = val.trim().length > 0 && !disabled;
+  const send = () => { if (active) { onSend(val.trim()); setVal(''); } };
+  const ref = useRef(null);
+
+  return (
+    <div className="aurora-wrap" style={{ boxShadow: '0 2px 20px rgba(26,158,226,.12)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--input-bg)', borderRadius: 36, padding: '7px 7px 7px 18px' }}>
+        <input ref={ref} value={val} onChange={e => setVal(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+          placeholder={live ? 'Écoute en cours…' : placeholder}
+          disabled={disabled}
+          style={{ flex: 1, border: 'none', outline: 'none', fontSize: 13.5, background: 'transparent', color: 'var(--dark)', fontFamily: 'DM Sans' }}/>
+        <button onClick={() => { setLive(l => !l); setTimeout(() => setLive(false), 3000); }}
+          className={live ? 'mic-live' : ''} title="Dicter"
+          style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, border: `1px solid ${live ? 'var(--blue)' : 'var(--border)'}`, background: live ? 'var(--blue)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .2s' }}
+          onMouseEnter={e => { if (!live) e.currentTarget.style.background = 'var(--hover)'; }}
+          onMouseLeave={e => { if (!live) e.currentTarget.style.background = 'transparent'; }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="5" y="1" width="4" height="7" rx="2" fill={live ? 'white' : 'var(--gray)'}/>
+            <path d="M2.5 7C2.5 9.49 4.51 11.5 7 11.5 9.49 11.5 11.5 9.49 11.5 7" stroke={live ? 'white' : 'var(--gray)'} strokeWidth="1.4" strokeLinecap="round"/>
+            <line x1="7" y1="11.5" x2="7" y2="13.5" stroke={live ? 'white' : 'var(--gray)'} strokeWidth="1.4" strokeLinecap="round"/>
+          </svg>
+        </button>
+        <button onClick={send}
+          style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: active ? 'var(--blue)' : 'rgba(0,0,0,.08)', border: 'none', cursor: active ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background .2s' }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 12V2M2.5 7L7 2L11.5 7" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── New folder modal ────────────────────────────────── */
+const FOLDER_COLORS = ['#1A9EE2','#E8192C','#22C55E','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#F97316'];
+function NewFolderModal({ onClose, onCreate }) {
+  const [name, setName] = useState('');
+  const [color, setColor] = useState(FOLDER_COLORS[0]);
+  const submit = () => { if (name.trim()) { onCreate(name.trim(), color); onClose(); } };
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.4)', animation: 'fadeIn .15s ease' }}>
+      <div style={{ background: 'var(--white)', borderRadius: 20, padding: 24, width: 320, boxShadow: '0 24px 60px rgba(0,0,0,.2)' }}>
+        <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--dark)', marginBottom: 18 }}>Nouveau dossier</div>
+        <input autoFocus value={name} onChange={e => setName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && submit()}
+          placeholder="Nom du dossier"
+          style={{ width: '100%', padding: '11px 14px', border: '1.5px solid var(--border)', borderRadius: 10, outline: 'none', fontSize: 14, fontFamily: 'DM Sans', color: 'var(--dark)', background: 'var(--bg)', marginBottom: 14 }}/>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          {FOLDER_COLORS.map(c => (
+            <button key={c} onClick={() => setColor(c)}
+              style={{ width: 24, height: 24, borderRadius: '50%', background: c, border: color === c ? '2.5px solid var(--dark)' : '2px solid transparent', cursor: 'pointer', boxShadow: color === c ? `0 0 0 2px var(--white), 0 0 0 4px ${c}` : 'none', transition: 'all .15s' }}/>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'var(--gray)', fontFamily: 'DM Sans' }}>Annuler</button>
+          <button onClick={submit} style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', background: 'var(--blue)', cursor: name.trim() ? 'pointer' : 'default', fontSize: 14, fontWeight: 700, color: 'white', fontFamily: 'DM Sans', opacity: name.trim() ? 1 : .5 }}>Créer</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Context menu ─────────────────────────────────────── */
+function ConvContextMenu({ x, y, conv, folders, onPin, onRename, onMoveToFolder, onDelete, onClose }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const handler = e => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    setTimeout(() => document.addEventListener('mousedown', handler), 0);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [onClose]);
+
+  const style = { width: '100%', padding: '8px 12px', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'DM Sans', fontSize: 13, color: 'var(--dark)', textAlign: 'left', borderRadius: 7, transition: 'background .12s' };
+  return (
+    <div ref={ref} style={{ position: 'fixed', left: x, top: y, zIndex: 200, background: 'var(--white)', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,.18)', border: '1px solid var(--border)', padding: 4, minWidth: 180, animation: 'fadeIn .12s ease' }}>
+      {[
+        { label: conv.pinned ? '★ Désépingler' : '★ Épingler', action: onPin },
+        { label: '✎ Renommer', action: onRename },
+      ].map(item => (
+        <button key={item.label} style={style} onClick={() => { item.action(); onClose(); }}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          {item.label}
+        </button>
+      ))}
+      {Object.values(folders).length > 0 && (
+        <div>
+          <div style={{ padding: '6px 12px 4px', fontSize: 10, fontWeight: 700, color: 'var(--gray)', textTransform: 'uppercase', letterSpacing: '.07em' }}>Déplacer vers</div>
+          {Object.values(folders).map(f => (
+            <button key={f.id} style={style} onClick={() => { onMoveToFolder(f.id); onClose(); }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              <span style={{ marginRight: 8 }}>●</span>{f.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <div style={{ margin: '4px 8px', height: 1, background: 'var(--border)' }}/>
+      <button style={{ ...style, color: 'var(--red)' }} onClick={() => { onDelete(); onClose(); }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,25,44,.08)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+        🗑 Supprimer
+      </button>
+    </div>
+  );
+}
+
+/* ── Profile panel ────────────────────────────────────── */
+function ProfilePanel({ profile, conversations, folders, onClose, onLogout }) {
+  const convCount = Object.keys(conversations).length;
+  const pinnedCount = Object.values(conversations).filter(c => c.pinned).length;
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 20, display: 'flex', flexDirection: 'column', background: 'var(--white)', animation: 'fadeIn .18s ease' }}>
+      <div style={{ padding: '14px 14px 0', display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--gray)', fontSize: 18, padding: 4 }}>✕</button>
+      </div>
+
+      {/* Avatar + info */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 20px 22px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <div style={{ width: 68, height: 68, borderRadius: '50%', background: 'linear-gradient(135deg,#1A1A1A,#3A3A3A)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ color: 'white', fontSize: 22, fontWeight: 700 }}>
+              {profile.name ? profile.name.split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase() : '?'}
+            </span>
+          </div>
+        </div>
+        <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--dark)', marginBottom: 2 }}>{profile.name || 'Utilisateur'}</div>
+        <div style={{ fontSize: 12, color: 'var(--gray)', marginBottom: 14 }}>{profile.email}</div>
+        <div style={{ display: 'flex', gap: 24 }}>
+          {[[convCount,'discussions'],[Object.keys(folders).length,'dossiers'],[pinnedCount,'épinglés']].map(([n,l]) => (
+            <div key={l} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--dark)' }}>{n}</div>
+              <div style={{ fontSize: 10, color: 'var(--gray)' }}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Folders */}
+      <div style={{ padding: '14px 14px 0', flex: 1, overflowY: 'auto' }}>
+        {Object.values(folders).length > 0 && <>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.09em', color: 'var(--gray)', textTransform: 'uppercase', marginBottom: 10 }}>Dossiers</p>
+          {Object.values(folders).map(f => (
+            <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px', borderRadius: 8, marginBottom: 3 }}>
+              <div style={{ width: 26, height: 26, borderRadius: 7, background: f.color + '22', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: f.color }}/>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, color: 'var(--dark)', fontWeight: 500 }}>{f.label}</div>
+                <div style={{ fontSize: 10.5, color: 'var(--gray)' }}>
+                  {Object.values(conversations).filter(c => c.folderId === f.id).length} discussions
+                </div>
+              </div>
+            </div>
+          ))}
+        </>}
+      </div>
+
+      <div style={{ borderTop: '1px solid var(--border)', padding: '10px 14px' }}>
+        <button onClick={onLogout} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 8px', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'DM Sans', borderRadius: 8, transition: 'background .15s', color: 'var(--red)' }}
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(232,25,44,.07)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          <span style={{ fontSize: 13, fontWeight: 600 }}>Déconnexion</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Sidebar ──────────────────────────────────────────── */
+function Sidebar({ profile, conversations, folders, activeConvId, onConvSelect, onNewChat, onUpdateConv, onDeleteConv, onCreateFolder, open, onToggle, darkMode, onDarkToggle, onLogout }) {
+  const [showProfile, setShowProfile] = useState(false);
+  const [showNewFolder, setShowNewFolder] = useState(false);
+  const [contextMenu, setContextMenu] = useState(null); // { convId, x, y }
+  const [renamingId, setRenamingId] = useState(null);
+  const [renameVal, setRenameVal] = useState('');
+  const [hovered, setHovered] = useState(null);
+  const [secOpen, setSec] = useState({ pinned: true, conv: true, folders: true });
+
+  const convList = useMemo(() => {
+    return Object.values(conversations).sort((a, b) => (b.updatedAt || b.createdAt) - (a.updatedAt || a.createdAt));
+  }, [conversations]);
+
+  const pinned = convList.filter(c => c.pinned);
+  const unpinned = convList.filter(c => !c.pinned);
+
+  // Group unpinned by time
+  const grouped = useMemo(() => {
+    const groups = {};
+    unpinned.forEach(c => {
+      const k = groupKey(c.updatedAt || c.createdAt);
+      if (!groups[k]) groups[k] = [];
+      groups[k].push(c);
+    });
+    return groups;
+  }, [unpinned]);
+
+  const GROUP_ORDER = ["Aujourd'hui", 'Hier', 'Cette semaine', 'Plus ancien'];
+  const w = open ? 228 : 58;
+
+  const SecHead = ({ label, k }) => (
+    <button onClick={() => open && setSec(s => ({ ...s, [k]: !s[k] }))}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 4px', marginBottom: 4, background: 'none', border: 'none', cursor: open ? 'pointer' : 'default' }}>
+      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.09em', color: 'var(--gray)', textTransform: 'uppercase', margin: 0 }}>{label}</p>
+      {open && <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transition: 'transform .2s', transform: secOpen[k] ? 'rotate(0)' : 'rotate(-90deg)' }}><path d="M2 4L5 7L8 4" stroke="var(--gray)" strokeWidth="1.4" strokeLinecap="round"/></svg>}
+    </button>
+  );
+
+  const ConvRow = ({ conv }) => {
+    const isActive = conv.id === activeConvId;
+    const isHovered = hovered === conv.id;
+    const isRenaming = renamingId === conv.id;
+
+    return (
+      <div style={{ position: 'relative' }}
+        onMouseEnter={() => setHovered(conv.id)}
+        onMouseLeave={() => setHovered(null)}>
+        {isRenaming ? (
+          <input autoFocus value={renameVal}
+            onChange={e => setRenameVal(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') { onUpdateConv(conv.id, { title: renameVal.trim() || conv.title }); setRenamingId(null); }
+              if (e.key === 'Escape') setRenamingId(null);
+            }}
+            onBlur={() => { onUpdateConv(conv.id, { title: renameVal.trim() || conv.title }); setRenamingId(null); }}
+            style={{ width: '100%', padding: '6px 10px', border: '1.5px solid var(--blue)', borderRadius: 7, outline: 'none', fontSize: 12.5, fontFamily: 'DM Sans', color: 'var(--dark)', background: 'var(--white)' }}/>
+        ) : (
+          <button onClick={() => onConvSelect(conv.id)}
+            onContextMenu={e => { e.preventDefault(); setContextMenu({ convId: conv.id, x: e.clientX, y: e.clientY }); }}
+            style={{ display: 'flex', alignItems: 'center', width: '100%', textAlign: 'left', padding: open ? '7px 10px' : '8px', borderRadius: 8, border: 'none', background: isActive ? 'rgba(26,158,226,.1)' : isHovered ? 'var(--hover)' : 'transparent', cursor: 'pointer', fontFamily: 'DM Sans', transition: 'background .12s', justifyContent: open ? 'flex-start' : 'center', gap: 6 }}>
+            {!open && <div style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? 'var(--blue)' : 'var(--gray)' }}/>}
+            {open && <>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: isActive ? 600 : 400, color: 'var(--dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{conv.title}</div>
+                <div style={{ fontSize: 10.5, color: 'var(--gray)' }}>{timeLabel(conv.updatedAt || conv.createdAt)}</div>
+              </div>
+              {(isHovered || isActive) && (
+                <button onClick={e => { e.stopPropagation(); setContextMenu({ convId: conv.id, x: e.clientX, y: e.clientY }); }}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '2px 4px', borderRadius: 5, color: 'var(--gray)', fontSize: 14, lineHeight: 1, flexShrink: 0 }}>···</button>
+              )}
+            </>}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      {showNewFolder && <NewFolderModal onClose={() => setShowNewFolder(false)} onCreate={(label, color) => onCreateFolder(label, color)}/>}
+      {contextMenu && (
+        <ConvContextMenu x={contextMenu.x} y={contextMenu.y}
+          conv={conversations[contextMenu.convId]}
+          folders={folders}
+          onPin={() => onUpdateConv(contextMenu.convId, { pinned: !conversations[contextMenu.convId]?.pinned })}
+          onRename={() => { setRenamingId(contextMenu.convId); setRenameVal(conversations[contextMenu.convId]?.title || ''); }}
+          onMoveToFolder={fid => onUpdateConv(contextMenu.convId, { folderId: fid })}
+          onDelete={() => onDeleteConv(contextMenu.convId)}
+          onClose={() => setContextMenu(null)}/>
+      )}
+
+      <div style={{ width: w, flexShrink: 0, height: '100vh', background: 'var(--sidebar)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', padding: open ? '18px 10px 14px' : '18px 7px 14px', userSelect: 'none', position: 'relative', transition: 'width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }}>
+
+        {showProfile && open && (
+          <ProfilePanel profile={profile} conversations={conversations} folders={folders}
+            onClose={() => setShowProfile(false)}
+            onLogout={onLogout}/>
+        )}
+
+        {/* Logo + toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: open ? 'space-between' : 'center', marginBottom: 20, flexShrink: 0 }}>
+          {open && <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.4px', color: 'var(--dark)' }}>ori</span>}
+          <button onClick={onToggle} style={{ width: 26, height: 26, borderRadius: 7, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background .15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <path d={open ? 'M7 2L4 5.5L7 9' : 'M4 2L7 5.5L4 9'} stroke="var(--gray)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* New chat */}
+        <button onClick={onNewChat} title="Nouvelle discussion"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: open ? 'flex-start' : 'center', gap: 8, padding: open ? '8px 10px' : '8px', borderRadius: 9, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: 12.5, fontWeight: 600, fontFamily: 'DM Sans', color: 'var(--dark)', marginBottom: 20, transition: 'background .15s', whiteSpace: 'nowrap', overflow: 'hidden', flexShrink: 0 }}
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0 }}><path d="M6 1V11M1 6H11" stroke="var(--dark)" strokeWidth="1.7" strokeLinecap="round"/></svg>
+          {open && 'Nouvelle discussion'}
+        </button>
+
+        {/* Scrollable list */}
+        <div style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+          {/* Pinned */}
+          {open && pinned.length > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <SecHead label="Épinglés" k="pinned"/>
+              {secOpen.pinned && pinned.map(c => (
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <svg width="9" height="9" viewBox="0 0 12 12" fill="var(--blue)" style={{ flexShrink: 0, marginLeft: 10 }}><path d="M7.5 1.5C7.5 1.5 9.5 2 10.5 4 10.5 4 9 5.5 7 5.5L5.5 8H4L4.5 5.5C4.5 5.5 2.5 4 2 2.5 2 2.5 4 1 7.5 1.5Z"/></svg>
+                  <div style={{ flex: 1 }}><ConvRow conv={c}/></div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Conversations by group */}
+          {convList.length > 0 && (
+            <>
+              {GROUP_ORDER.filter(g => grouped[g]).map(g => (
+                <div key={g} style={{ marginBottom: 12 }}>
+                  {open && <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', color: 'var(--gray)', textTransform: 'uppercase', padding: '0 4px', marginBottom: 4 }}>{g}</div>}
+                  {grouped[g].map(c => <ConvRow key={c.id} conv={c}/>)}
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Folders */}
+          {(open || Object.keys(folders).length > 0) && (
+            <div style={{ marginTop: 4 }}>
+              {open && Object.keys(folders).length > 0 && <>
+                <SecHead label="Dossiers" k="folders"/>
+                {secOpen.folders && Object.values(folders).map(f => {
+                  const count = Object.values(conversations).filter(c => c.folderId === f.id).length;
+                  return (
+                    <button key={f.id} title={f.label}
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'DM Sans', transition: 'background .12s', width: '100%' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <FolderIcon color={f.color} size={14}/>
+                      <span style={{ fontSize: 12.5, color: 'var(--dark)', flex: 1, textAlign: 'left' }}>{f.label}</span>
+                      <span style={{ fontSize: 11, color: 'var(--gray)' }}>{count}</span>
+                    </button>
+                  );
+                })}
+              </>}
+              {open && (
+                <button onClick={() => setShowNewFolder(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 10px', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'DM Sans', width: '100%', borderRadius: 8, transition: 'background .12s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <span style={{ fontSize: 16, color: 'var(--blue)', lineHeight: 1 }}>+</span>
+                  <span style={{ fontSize: 12.5, color: 'var(--blue)', fontWeight: 600 }}>Nouveau dossier</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Dark mode */}
+        {open && (
+          <button onClick={onDarkToggle}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '8px 10px', marginBottom: 4, borderRadius: 9, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'DM Sans', transition: 'background .15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <span style={{ fontSize: 12, color: 'var(--gray)', fontWeight: 500 }}>{darkMode ? '☀ Mode clair' : '☾ Mode sombre'}</span>
+            <div style={{ width: 34, height: 18, borderRadius: 10, position: 'relative', background: darkMode ? 'var(--blue)' : 'rgba(0,0,0,.12)', transition: 'background .25s', flexShrink: 0 }}>
+              <div style={{ position: 'absolute', top: 2, left: darkMode ? 18 : 2, width: 14, height: 14, borderRadius: '50%', background: 'white', transition: 'left .25s', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }}/>
+            </div>
+          </button>
+        )}
+
+        {/* User */}
+        <div onClick={() => open && setShowProfile(true)}
+          style={{ borderTop: '1px solid var(--border)', paddingTop: 4, marginTop: 4, display: 'flex', alignItems: 'center', gap: 9, cursor: open ? 'pointer' : 'default', borderRadius: 9, padding: open ? '9px 8px' : '9px 4px', transition: 'background .15s', justifyContent: open ? 'flex-start' : 'center', flexShrink: 0 }}
+          onMouseEnter={e => { if (open) e.currentTarget.style.background = 'var(--hover)'; }}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          <UserAvatar name={profile?.name} size={28}/>
+          {open && profile && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--dark)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile.name || profile.email}</div>
+              <div style={{ fontSize: 10.5, color: 'var(--gray)' }}>Mon profil</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ── Login ────────────────────────────────────────────── */
+function LoginScreen({ onNext, headerMode }) {
+  const [email, setEmail] = useState('');
+  const [focused, setFocused] = useState(false);
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      {headerMode === 'full' && (
+        <div style={{ height: 52, padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', background: 'var(--header)', backdropFilter: 'blur(12px)' }}>
+          <img src="/uploads/LETUDIANT_ROUGE.png" alt="l'Étudiant" style={{ height: 22, objectFit: 'contain' }}/>
+          <span style={{ fontSize: 12, color: 'var(--gray)' }}>Powered by Mistral</span>
+        </div>
+      )}
+      {headerMode === 'badge' && (
+        <div style={{ padding: '18px 32px', display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '5px 12px', borderRadius: 20, border: '1px solid var(--border)', background: 'var(--hover)' }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--red)' }}/>
+            <span style={{ fontSize: 11.5, color: 'var(--gray)', fontWeight: 500 }}>l'Étudiant</span>
+          </div>
+        </div>
+      )}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 24px' }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+          <div className="fu" style={{ textAlign: 'center', marginBottom: 36 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 22 }}>
+              <OriAvatar size={72}/>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Sparkle size={8}/>
+                <span style={{ fontSize: 12, color: 'var(--gray)', fontWeight: 500 }}>par l'Étudiant</span>
+              </div>
+            </div>
+            <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-1.2px', lineHeight: 1.1, marginBottom: 8, color: 'var(--dark)' }}>Trouvez votre voie.</h1>
+            <p style={{ fontSize: 13.5, color: 'var(--gray)', lineHeight: 1.6 }}>Votre assistant d'orientation enrichi par l'expertise des journalistes de l'Étudiant.</p>
+          </div>
+          <div className="fu2" style={{ background: 'var(--white)', borderRadius: 22, padding: 28, boxShadow: '0 4px 40px rgba(0,0,0,.08)', border: '1px solid var(--border)' }}>
+            <button style={{ width: '100%', padding: '12px 18px', borderRadius: 12, border: '1.5px solid var(--border)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 14, fontWeight: 600, fontFamily: 'DM Sans', color: 'var(--dark)', marginBottom: 16, transition: 'background .15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              onClick={() => onNext(email || 'google@example.com')}>
+              <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
+              Continuer avec Google
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }}/><span style={{ fontSize: 12, color: 'var(--gray)' }}>ou</span><div style={{ flex: 1, height: 1, background: 'var(--border)' }}/>
+            </div>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+              onKeyDown={e => e.key === 'Enter' && email.trim() && onNext(email.trim())}
+              placeholder="Votre adresse email"
+              style={{ width: '100%', padding: '12px 16px', marginBottom: 12, border: `1.5px solid ${focused ? 'var(--blue)' : 'var(--border)'}`, borderRadius: 12, outline: 'none', fontSize: 14, fontFamily: 'DM Sans', color: 'var(--dark)', background: 'var(--bg)', transition: 'border-color .15s' }}/>
+            <button onClick={() => email.trim() && onNext(email.trim())}
+              style={{ width: '100%', padding: '13px 18px', borderRadius: 12, background: email.trim() ? 'var(--blue)' : 'rgba(0,0,0,.1)', border: 'none', color: 'white', fontSize: 14, fontWeight: 700, fontFamily: 'DM Sans', cursor: email.trim() ? 'pointer' : 'default', transition: 'all .15s' }}>
+              Continuer →
+            </button>
+            <p style={{ textAlign: 'center', marginTop: 14, fontSize: 12.5, color: 'var(--gray)' }}>
+              Pas encore de compte ?{' '}
+              <button onClick={() => email.trim() && onNext(email.trim())} style={{ border: 'none', background: 'none', color: 'var(--blue)', fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans', fontSize: 12.5 }}>S'inscrire</button>
+            </p>
+          </div>
+          <p className="fu3" style={{ textAlign: 'center', marginTop: 18, fontSize: 11, color: 'var(--gray)', lineHeight: 1.6 }}>
+            En continuant, vous acceptez nos <u style={{ cursor: 'pointer' }}>CGU</u> et notre <u style={{ cursor: 'pointer' }}>Politique de confidentialité</u>.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Onboarding ───────────────────────────────────────── */
+const INTERESTS = ['Médecine','Droit','Économie','Sciences Po','Ingénierie','Art & Design','Sport & STAPS','Lettres','Psychologie','Commerce','Architecture','Informatique'];
+
+function OnboardingScreen({ email, step, onNext, onSkip }) {
+  const [name, setName] = useState('');
+  const [sel, setSel] = useState([]);
+  const toggle = v => setSel(s => s.includes(v) ? s.filter(x => x !== v) : [...s, v]);
+
+  return (
+    <div key={step} style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '18px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <OriAvatar size={30}/>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {[1,2].map(n => <div key={n} style={{ height: 6, borderRadius: 3, width: n === step ? 22 : 6, background: n === step ? 'var(--blue)' : 'rgba(0,0,0,.15)', transition: 'all .3s' }}/>)}
+        </div>
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 min(10vw,80px)', maxWidth: 800, margin: '0 auto', width: '100%', paddingBottom: 40 }}>
+        {step === 1 ? <>
+          <h1 className="fu" style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 800, letterSpacing: '-1.8px', color: 'var(--dark)', marginBottom: 12 }}>Bonjour !<br/>Comment vous appelez-vous ?</h1>
+          <p className="fu2" style={{ fontSize: 15, color: 'var(--gray)', marginBottom: 32, lineHeight: 1.6 }}>Je suis Ori, votre assistant en orientation scolaire,<br/>enrichi par l'expertise des journalistes de l'Étudiant.</p>
+          <input className="fu3" autoFocus value={name} onChange={e => setName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && name.trim() && onNext(name.trim(), sel)}
+            placeholder="Votre prénom"
+            style={{ fontSize: 18, fontWeight: 600, padding: '14px 20px', borderRadius: 14, border: '2px solid var(--border)', outline: 'none', background: 'var(--white)', color: 'var(--dark)', fontFamily: 'DM Sans', marginBottom: 32, maxWidth: 360, transition: 'border-color .15s' }}
+            onFocus={e => e.currentTarget.style.borderColor = 'var(--blue)'}
+            onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}/>
+          <div className="fu4" style={{ display: 'flex', gap: 14 }}>
+            <button onClick={() => name.trim() && onNext(name.trim(), sel)}
+              style={{ padding: '12px 28px', borderRadius: 40, background: name.trim() ? 'var(--blue)' : 'rgba(0,0,0,.1)', border: 'none', color: 'white', fontSize: 14.5, fontWeight: 700, cursor: name.trim() ? 'pointer' : 'default', fontFamily: 'DM Sans', transition: 'all .15s' }}>
+              C'est parti →
+            </button>
+            <button onClick={() => onSkip()} style={{ padding: '12px 20px', borderRadius: 40, background: 'transparent', border: 'none', color: 'var(--gray)', fontSize: 14, cursor: 'pointer', fontFamily: 'DM Sans' }}>Passer</button>
+          </div>
+        </> : <>
+          <h1 className="fu" style={{ fontSize: 'clamp(26px,3.5vw,40px)', fontWeight: 800, letterSpacing: '-1.5px', color: 'var(--dark)', marginBottom: 10 }}>Quels domaines<br/>vous intéressent ?</h1>
+          <p className="fu2" style={{ fontSize: 15, color: 'var(--gray)', marginBottom: 32, lineHeight: 1.6 }}>Je personnaliserai mes conseils selon vos centres d'intérêt.</p>
+          <div className="fu3" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 40 }}>
+            {INTERESTS.map(i => { const on = sel.includes(i); return (
+              <button key={i} onClick={() => toggle(i)}
+                style={{ padding: '10px 20px', borderRadius: 40, border: `1.5px solid ${on ? 'var(--blue)' : 'var(--border)'}`, background: on ? 'var(--blue)' : 'transparent', color: on ? 'white' : 'var(--dark)', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'DM Sans', transition: 'all .18s' }}>
+                {i}
+              </button>
+            ); })}
+          </div>
+          <div className="fu4" style={{ display: 'flex', gap: 14 }}>
+            <button onClick={() => onNext(null, sel)}
+              style={{ padding: '12px 28px', borderRadius: 40, background: 'var(--blue)', border: 'none', color: 'white', fontSize: 14.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans' }}>
+              Commencer →
+            </button>
+            <button onClick={() => onNext(null, [])} style={{ padding: '12px 20px', borderRadius: 40, background: 'transparent', border: 'none', color: 'var(--gray)', fontSize: 14, cursor: 'pointer', fontFamily: 'DM Sans' }}>Passer</button>
+          </div>
+        </>}
+      </div>
+    </div>
+  );
+}
+
+/* ── Home ─────────────────────────────────────────────── */
+const SUGGESTIONS = ['Choisir mon orientation','Comparer des formations','Préparer mon dossier Parcoursup'];
+
+function HomeScreen({ profile, conversations, folders, onStartConv, activeConvId, onConvSelect, onUpdateConv, onDeleteConv, onCreateFolder, sidebarOpen, onSidebarToggle, darkMode, toggleDark, onLogout }) {
+  return (
+    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
+      <Sidebar profile={profile} conversations={conversations} folders={folders} activeConvId={activeConvId}
+        onConvSelect={onConvSelect} onNewChat={() => {}} onUpdateConv={onUpdateConv} onDeleteConv={onDeleteConv}
+        onCreateFolder={onCreateFolder} open={sidebarOpen} onToggle={onSidebarToggle} darkMode={darkMode} onDarkToggle={toggleDark} onLogout={onLogout}/>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 40px', minWidth: 0 }}>
+        <div style={{ textAlign: 'center', maxWidth: 520, width: '100%' }}>
+          <div className="fu" style={{ display: 'flex', justifyContent: 'center', marginBottom: 22 }}><OriAvatar size={56}/></div>
+          <h1 className="fu2" style={{ fontSize: 'clamp(22px,2.8vw,34px)', fontWeight: 800, letterSpacing: '-1.4px', lineHeight: 1.1, marginBottom: 10, color: 'var(--dark)' }}>
+            Bonjour{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''} 👋<br/>Comment puis-je vous aider ?
+          </h1>
+          <p className="fu2" style={{ fontSize: 13.5, color: 'var(--gray)', lineHeight: 1.6, marginBottom: 28 }}>Posez-moi n'importe quelle question sur votre orientation,<br/>vos études ou votre avenir professionnel.</p>
+          <div className="fu3" style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 28, flexWrap: 'wrap' }}>
+            {SUGGESTIONS.map(s => (
+              <button key={s} onClick={() => onStartConv(s)}
+                style={{ padding: '10px 18px', borderRadius: 40, border: '1.5px solid var(--border)', background: 'var(--white)', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, fontFamily: 'DM Sans', color: 'var(--dark)', transition: 'all .18s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--blue)'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = 'var(--blue)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'var(--white)'; e.currentTarget.style.color = 'var(--dark)'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
+                {s}
+              </button>
+            ))}
+          </div>
+          <div className="fu4">
+            <ChatInput onSend={onStartConv}/>
+            <p style={{ textAlign: 'center', marginTop: 10, fontSize: 11, color: 'var(--gray)', lineHeight: 1.6 }}>Réponse générée par IA · <u style={{ cursor: 'pointer' }}>En savoir plus</u></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── OriThinking ──────────────────────────────────────── */
+function OriThinking() {
+  return (
+    <div className="me" style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+      <OriAvatar size={32}/>
+      <div>
+        <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--gray)', marginBottom: 8 }}>Ori</div>
+        <div style={{ background: 'var(--white)', borderRadius: '4px 16px 16px 16px', padding: '12px 18px', border: '1px solid var(--border)', display: 'inline-flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ position: 'relative', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', width: 32, height: 32, borderRadius: '50%', background: 'var(--blue)', animation: 'glow2 3s ease-in-out infinite', opacity: .08 }}/>
+            <div style={{ position: 'absolute', width: 32, height: 32, borderRadius: '50%', background: 'var(--blue)', animation: 'glow1 3s ease-in-out infinite' }}/>
+            <div className="ori-spin"><svg width="12" height="12" viewBox="0 0 10 10" fill="var(--blue)"><path d="M5 0L6.3 3.7L10 5L6.3 6.3L5 10L3.7 6.3L0 5L3.7 3.7Z"/></svg></div>
+          </div>
+          <span className="ori-breathe" style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--dark)' }}>Ori réfléchit…</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── AssistantBubble ──────────────────────────────────── */
+function AssistantBubble({ parts }) {
+  const [copied, setCopied] = useState(false);
+  const text = parts.map(p => p.text || '').join('\n');
+  const copy = () => navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  return (
+    <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+      <OriAvatar size={32}/>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--gray)', marginBottom: 8 }}>Ori</div>
+        <div style={{ background: 'var(--white)', borderRadius: '4px 14px 14px 14px', padding: '12px 16px', border: '1px solid var(--border)' }}>
+          {parts.map((p, j) => <div key={j}>
+            {p.type === 'intro'  && <p style={{ fontSize: 13.5, lineHeight: 1.65, marginBottom: parts.length > 1 ? 14 : 0, color: 'var(--dark)' }}><RichText text={p.text}/></p>}
+            {p.type === 'footer' && <p style={{ fontSize: 13, color: 'var(--gray)', borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 4 }}>{p.text}</p>}
+          </div>)}
+        </div>
+        <div style={{ display: 'flex', gap: 14, marginTop: 7 }}>
+          <button onClick={copy} style={{ border: 'none', background: 'none', fontSize: 12, color: copied ? 'var(--blue)' : 'var(--gray)', cursor: 'pointer', fontFamily: 'DM Sans', fontWeight: 500, padding: 0, transition: 'color .15s' }}>
+            {copied ? '✓ Copié' : 'Copier'}
+          </button>
+          {['Régénérer','Sources'].map(a => (
+            <button key={a} style={{ border: 'none', background: 'none', fontSize: 12, color: 'var(--gray)', cursor: 'pointer', fontFamily: 'DM Sans', fontWeight: 500, padding: 0 }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--dark)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--gray)'}>{a}</button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── ConversationScreen ───────────────────────────────── */
+function ConversationScreen({ profile, conv, conversations, folders, onAddMessage, onConvSelect, onNewChat, onUpdateConv, onDeleteConv, onCreateFolder, sidebarOpen, onSidebarToggle, darkMode, toggleDark, onLogout }) {
+  const [typing, setTyping] = useState(false);
+  const scrollRef = useRef();
+
+  const handleSend = async text => {
+    const userMsg = { role: 'user', text };
+    onAddMessage(conv.id, userMsg);
+    setTyping(true);
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, thread_id: conv.threadId }),
+      });
+      const data = await res.json();
+      const reply = data.error ? 'Erreur : ' + data.error : data.response;
+      onAddMessage(conv.id, { role: 'assistant', parts: [{ type: 'intro', text: reply }] });
+    } catch {
+      onAddMessage(conv.id, { role: 'assistant', parts: [{ type: 'intro', text: 'Erreur de connexion. Veuillez réessayer.' }] });
+    } finally {
+      setTyping(false);
+    }
+  };
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [conv?.messages, typing]);
+
+  const messages = conv?.messages || [];
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
+      <Sidebar profile={profile} conversations={conversations} folders={folders} activeConvId={conv?.id}
+        onConvSelect={onConvSelect} onNewChat={onNewChat} onUpdateConv={onUpdateConv} onDeleteConv={onDeleteConv}
+        onCreateFolder={onCreateFolder} open={sidebarOpen} onToggle={onSidebarToggle} darkMode={darkMode} onDarkToggle={toggleDark} onLogout={onLogout}/>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <div style={{ padding: '13px 40px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'var(--header)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--dark)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60%' }}>{conv?.title || 'Discussion'}</span>
+        </div>
+
+        <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '28px 32px 12px' }}>
+          <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {messages.length === 0 && !typing && (
+              <div className="fu" style={{ textAlign: 'center', paddingTop: 60 }}>
+                <OriAvatar size={44}/>
+                <p style={{ marginTop: 14, fontSize: 14, color: 'var(--gray)', lineHeight: 1.7 }}>Posez votre première question.<br/><span style={{ fontSize: 12 }}>Ori consulte l'expertise de l'Étudiant pour vous répondre.</span></p>
+              </div>
+            )}
+            {messages.map((msg, i) => (
+              <div key={i} className={i >= messages.length - 1 ? 'me' : ''}>
+                {msg.role === 'user'
+                  ? <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <div style={{ background: 'var(--msg-bg)', color: 'var(--msg-color)', padding: '10px 16px', borderRadius: '16px 16px 4px 16px', maxWidth: '68%', fontSize: 13.5, lineHeight: 1.6 }}>{msg.text}</div>
+                    </div>
+                  : <AssistantBubble parts={msg.parts}/>
+                }
+              </div>
+            ))}
+            {typing && <OriThinking/>}
+          </div>
+        </div>
+
+        <div style={{ padding: '10px 32px 22px', flexShrink: 0 }}>
+          <div style={{ maxWidth: 720, margin: '0 auto' }}>
+            <ChatInput onSend={handleSend} disabled={typing}/>
+            <p style={{ textAlign: 'center', marginTop: 8, fontSize: 11, color: 'var(--gray)', lineHeight: 1.6 }}>Réponse générée par IA · <u style={{ cursor: 'pointer' }}>En savoir plus</u></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── App ──────────────────────────────────────────────── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{ "headerMode": "full" }/*EDITMODE-END*/;
+
+function App() {
+  /* Persistent state */
+  const [profile, setProfile]     = useState(() => store.get('ori_profile', null));
+  const [convs,   setConvs]       = useState(() => store.get('ori_convs', {}));
+  const [folders, setFolders]     = useState(() => store.get('ori_folders', {}));
+
+  /* UI state */
+  const [screen,      setScreen]  = useState(() => store.get('ori_profile', null) ? 'home' : 'login');
+  const [onbStep,     setOnbStep] = useState(1);
+  const [onbEmail,    setOnbEmail]= useState('');
+  const [activeConvId,setActive]  = useState(null);
+  const [sidebarOpen, setSidebar] = useState(true);
+  const [darkMode,    setDark]    = useState(false);
+  const [t, setTweak]             = window.useTweaks(TWEAK_DEFAULTS);
+
+  /* Persist on change */
+  useEffect(() => { store.set('ori_convs', convs); }, [convs]);
+  useEffect(() => { store.set('ori_folders', folders); }, [folders]);
+  useEffect(() => { if (profile) store.set('ori_profile', profile); }, [profile]);
+
+  const toggleDark = useCallback(() => setDark(d => {
+    const next = !d;
+    document.documentElement.classList.toggle('dark', next);
+    return next;
+  }), []);
+
+  /* Conversation operations */
+  const createConv = useCallback((title) => {
+    const id = uid();
+    const conv = { id, title, threadId: 'thread_' + uid(), messages: [], createdAt: Date.now(), updatedAt: Date.now(), pinned: false, folderId: null };
+    setConvs(prev => ({ ...prev, [id]: conv }));
+    return conv;
+  }, []);
+
+  const addMessage = useCallback((convId, msg) => {
+    setConvs(prev => {
+      const conv = prev[convId];
+      if (!conv) return prev;
+      return { ...prev, [convId]: { ...conv, messages: [...conv.messages, msg], updatedAt: Date.now() } };
+    });
+  }, []);
+
+  const updateConv = useCallback((id, patch) => {
+    setConvs(prev => prev[id] ? { ...prev, [id]: { ...prev[id], ...patch } } : prev);
+  }, []);
+
+  const deleteConv = useCallback((id) => {
+    setConvs(prev => { const n = { ...prev }; delete n[id]; return n; });
+    if (activeConvId === id) { setActive(null); setScreen('home'); }
+  }, [activeConvId]);
+
+  const createFolder = useCallback((label, color) => {
+    const id = uid();
+    setFolders(prev => ({ ...prev, [id]: { id, label, color } }));
+  }, []);
+
+  /* Navigation */
+  const goConv = useCallback((id) => {
+    setActive(id);
+    setScreen('conversation');
+  }, []);
+
+  const startConv = useCallback((text) => {
+    const conv = createConv(text.length > 50 ? text.slice(0, 47) + '…' : text);
+    setActive(conv.id);
+    setScreen('conversation');
+  }, [createConv]);
+
+  const handleLogout = useCallback(() => {
+    store.clear();
+    setProfile(null);
+    setConvs({});
+    setFolders({});
+    setActive(null);
+    setScreen('login');
+  }, []);
+
+  const activeConv = convs[activeConvId] || null;
+
+  return (
+    <>
+      {screen === 'login' && (
+        <LoginScreen headerMode={t.headerMode} onNext={email => { setOnbEmail(email); setOnbStep(1); setScreen('onboarding'); }}/>
+      )}
+
+      {screen === 'onboarding' && (
+        <OnboardingScreen email={onbEmail} step={onbStep}
+          onNext={(name, interests) => {
+            if (onbStep === 1) {
+              setOnbStep(2);
+              if (name) setProfile(p => ({ ...(p||{}), name, email: onbEmail, interests: [] }));
+              else setProfile({ name: onbEmail.split('@')[0], email: onbEmail, interests: [] });
+            } else {
+              setProfile(p => ({ ...p, interests }));
+              setScreen('home');
+            }
+          }}
+          onSkip={() => {
+            if (!profile) setProfile({ name: onbEmail.split('@')[0], email: onbEmail, interests: [] });
+            setScreen('home');
+          }}/>
+      )}
+
+      {screen === 'home' && (
+        <HomeScreen profile={profile} conversations={convs} folders={folders}
+          onStartConv={startConv} activeConvId={activeConvId} onConvSelect={goConv}
+          onUpdateConv={updateConv} onDeleteConv={deleteConv} onCreateFolder={createFolder}
+          sidebarOpen={sidebarOpen} onSidebarToggle={() => setSidebar(o => !o)}
+          darkMode={darkMode} toggleDark={toggleDark} onLogout={handleLogout}/>
+      )}
+
+      {screen === 'conversation' && activeConv && (
+        <ConversationScreen profile={profile} conv={activeConv} conversations={convs} folders={folders}
+          onAddMessage={addMessage} onConvSelect={goConv} onNewChat={() => { setActive(null); setScreen('home'); }}
+          onUpdateConv={updateConv} onDeleteConv={deleteConv} onCreateFolder={createFolder}
+          sidebarOpen={sidebarOpen} onSidebarToggle={() => setSidebar(o => !o)}
+          darkMode={darkMode} toggleDark={toggleDark} onLogout={handleLogout}/>
+      )}
+
+      <window.TweaksPanel>
+        <window.TweakSection label="En-tête"/>
+        <window.TweakRadio label="Style" value={t.headerMode} onChange={v => setTweak('headerMode', v)}
+          options={[{label:'Barre',value:'full'},{label:'Badge',value:'badge'},{label:'Caché',value:'hidden'}]}/>
+        <window.TweakSection label="Navigation"/>
+        <window.TweakButton label="→ Login"        onClick={() => { store.clear(); setProfile(null); setScreen('login'); }}/>
+        <window.TweakButton label="→ Onboarding"   onClick={() => { setOnbEmail('demo@test.com'); setOnbStep(1); setScreen('onboarding'); }}/>
+        <window.TweakButton label="→ Accueil"      onClick={() => { setActive(null); setScreen('home'); }}/>
+        <window.TweakButton label="→ Nouvelle conv" onClick={() => startConv('Nouvelle discussion')}/>
+        <window.TweakSection label="Debug"/>
+        <window.TweakButton label="⚠ Effacer données" onClick={() => { if(confirm('Effacer toutes les données ?')) handleLogout(); }}/>
+      </window.TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+{% endraw %}
+</script>
+</body>
+</html>
